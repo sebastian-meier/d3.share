@@ -1,0 +1,2 @@
+The SVGs in this folder are the source files for the images used in the tool.
+Replacing them in this folder will not change them, you need to replace the raw SVG code in d3.share.js.

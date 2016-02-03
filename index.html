@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <link type="text/css" href="d3.share.css" rel="stylesheet"/>
+  <script src="libs/d3.min.js"></script>
+  <script src="libs/d3.tools.min.js"></script>
+  <script src="lang/en.js"></script>
+  <script src="d3.share.js"></script>
+  <style type="text/css">
+    .bar rect {
+      fill: steelblue;
+      shape-rendering: crispEdges;
+    }
+
+    .axis path, .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+
+    .axis text{
+      font-family:Helvetica, Arial, sans-serif;
+      font-size:10px;
+    }
+
+    g.x.axis g.tick:last-of-type text{
+      text-anchor:end !important;
+    }
+  </style>
+</head>
+<body>
+  <script>
+
+  //Generate some Random Data for our bar chart
+  var data = [], dataSize = 10;
+  for(var d=0; d<dataSize; d++){data.push(Math.random()*10);}
+
+  var x,y,xAxis,yAxis,svg,height,width,scaleSize=20,container;
+  
+  //The actual visualization part
+  function init(i_container){
+    container = i_container;
+    svg = container.append("svg");
+    svg.attr("height", container.attr("height"));
+
+    var bb = svg.node().getBoundingClientRect();
+    width = bb.width;
+    height = bb.height;
+
+    x = d3.scale.linear()
+      .range([0, width-scaleSize])
+      .domain([0, data.length]);
+
+    xAxis = d3.svg.axis()
+      .scale(x)
+      .ticks(Math.min(Math.max((width-scaleSize)/50, 2),10))
+      .orient("bottom");
+
+    y = d3.scale.linear()
+      .domain([0, d3.max(data)])
+      .range([height-scaleSize, 0]);
+
+    yAxis = d3.svg.axis()
+      .scale(y)
+      .ticks(Math.min(Math.max((height-scaleSize)/30, 2),10))
+      .orient("left");
+
+    var bar = svg.selectAll(".bar")
+      .data(data)
+    .enter().append("g")
+      .attr("class", "bar")
+      .attr("transform", function(d, i) { return "translate(" + (x(i) + scaleSize) + "," + y(d) + ")"; });
+
+    bar.append("rect")
+        .attr("x", 1)
+        .attr("width", ((width-scaleSize)/data.length-2))
+        .attr("height", function(d) { return height - scaleSize - y(d); });
+
+    svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate("+scaleSize+"," + (height-scaleSize) + ")")
+      .call(xAxis);
+
+    svg.append("g")
+      .attr("class", "y axis")
+      .attr("transform", "translate("+scaleSize+",0)")
+      .call(yAxis);
+  }
+
+  //The function for redrawing the graph on resize
+  function redraw(i_container){
+    svg.attr("height", container.attr("height"));
+    var bb = svg.node().getBoundingClientRect();
+    width = bb.width;
+    height = bb.height;
+
+    x.range([0, width-scaleSize]);
+    xAxis.ticks(Math.min(Math.max((width-scaleSize)/50, 2),10));
+
+    y.range([height-scaleSize, 0]);
+    yAxis.ticks(Math.min(Math.max((height-scaleSize)/30, 2),10));
+
+    var bar = svg.selectAll(".bar")
+      .attr("transform", function(d, i) { return "translate(" + (x(i) + scaleSize) + "," + y(d) + ")"; });
+
+    bar.selectAll("rect")
+        .attr("width", ((width-scaleSize)/data.length-2))
+        .attr("height", function(d) { return height - scaleSize - y(d); });
+
+    svg.select(".x.axis")
+      .attr("transform", "translate("+scaleSize+"," + (height-scaleSize) + ")")
+      .call(xAxis);
+
+    svg.select(".y.axis")
+      .attr("transform", "translate("+scaleSize+",0)")
+      .call(yAxis);
+
+  }
+
+  //Initiate the sharing framework
+  share({
+    headline:'San Francisco Bay Area',
+    subline:'Data from the Environmental Learning Experiment',
+    attribution:'&copy; Stanford Eco Group',
+    data:'http://www.google.com/docs',
+    share:true,
+    lang:'en',
+    sharetype:'origin',
+    fullscreen:true,
+    redrawCallback:redraw,
+    callback:init,
+    origin:{
+      url:'http://www.sebastianmeier.eu/2015/05/15/responsive-visualizations/',
+      strict:false,
+      title:'Responsive web-based visualizations <i>by Sebastian Meier</i>'
+    }
+  });
+
+</script>
